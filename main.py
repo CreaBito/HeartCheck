@@ -1,1 +1,1 @@
-ptinr("Hello")
+print('Елисей')
