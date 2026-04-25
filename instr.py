@@ -25,3 +25,5 @@ txt_age = 'Полных лет:'
 txt_finalwin = 'Результаты'
 txt_index = 'Индекс Руфье: '
 txt_workheart = 'Работоспособность сердца: '
+win_w = 900
+win_h = 700
