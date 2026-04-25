@@ -3,7 +3,7 @@ from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QHBoxLayout, QVB
 from instr import *
 
 
-class MainWin(QWidget):
+class FinalWin(QWidget):
     def __init__(self) :
         super().__init__()
         self.set_appear()
@@ -12,15 +12,17 @@ class MainWin(QWidget):
   
         self.show()
     def initUI(self):
-      self.text_hi = QLabel(txt_index)
-      self.text_instruction = QLabel(txt_workheart)
+
+      self.final_index = QLabel(txt_index)
+      self.final_result = QLabel(txt_workheart)
 
       self.layout_line = QVBoxLayout()
 
-      self.layout_line.addWidget(self.text_hi, alignment = Qt.AlignLeft)
-      self.layout_line.addWidget(self.txt_instruction, alignment = Qt.AlignLeft)
+      self.layout_line.addWidget(self.final_index, alignment = Qt.AlignCenter)
+      self.layout_line.addWidget(self.final_result, alignment = Qt.AlignCenter)
       self.setLayout(self.layout_line)
 
     def set_appear(self):
-      self.setWindowTitle(txt_title)
+      self.setWindowTitle(txt_finalwin)
       self.resize(win_w,win_h)
+      
