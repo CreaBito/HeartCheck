@@ -88,13 +88,13 @@ class TestWin(QWidget):
         self.setLayout(self.h_line)
 
     def next_click(self):
-        
+        name = self.txt_hintname.text().strip()
         age_str = self.txt_hintage.text().strip()
         t1_str = self.txt_hinttest1.text().strip()
         t2_str = self.txt_hinttest2.text().strip()
         t3_str = self.txt_hinttest3.text().strip()
         
-        if not all([age_str, t1_str, t2_str, t3_str]):
+        if not all([name,age_str, t1_str, t2_str, t3_str]):
             QMessageBox.warning(self, "Ошибка", "Заполните все поля!")
             return
         
@@ -119,6 +119,9 @@ class TestWin(QWidget):
         self.fw = FinalWin(self.exp)
         self.hide()
         name = self.txt_hintname.text().strip()
+        person = Person(name, age)
+        exp = Experiment(person, t1, t2, t3)   # t1, t2, t3 – уже int
+        self.fw = FinalWin(exp)
         
 
     def connects(self):
