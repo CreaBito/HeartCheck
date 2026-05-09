@@ -1,147 +1,176 @@
-from PyQt5.QtCore import Qt, QTime,QTimer, QLocale
+from PyQt5.QtCore import Qt, QTimer, QTime
 from PyQt5.QtWidgets import (
-    QApplication, QWidget, QLineEdit, QPushButton, QHBoxLayout, QVBoxLayout, QLabel, QLineEdit)
-
+    QApplication, QWidget, QLineEdit, QPushButton, QHBoxLayout, QVBoxLayout, QLabel, QMessageBox)
+from PyQt5.QtGui import QDoubleValidator, QIntValidator, QFont
 from instr import *
 from final_win import *
-from PyQt5.QtGui import QDoubleValidator, QIntValidator, QFont
 
-class Experement():
+class Experiment():
     def __init__(self, person, test1, test2, test3):
-        self.prs = person
+        self.person = person   # объект Person
         self.test1 = test1
         self.test2 = test2
         self.test3 = test3
-    
+
 class Person():
     def __init__(self, name, age):
         self.name = name
         self.age = age
 
 class TestWin(QWidget):
-
     def __init__(self):
         super().__init__()
+        self.time = QTime(0, 0, 0)   # вместо global
+        self.timer = None
         self.set_appear()
-
         self.initUI()
-
         self.connects()
-
         self.show()
 
     def set_appear(self):
         self.setWindowTitle(txt_title)
         self.resize(win_w, win_h)
-        
 
     def initUI(self):
         self.h_line = QHBoxLayout()
         self.r_line = QVBoxLayout()
         self.l_line = QVBoxLayout()
-        
 
+        # Кнопки – теперь добавлены в лейаут
         self.btn_next = QPushButton(txt_sendresults, self)
-
+        self.btn_test1 = QPushButton("Замерить пульс (15 сек)", self)
+        self.btn_test2 = QPushButton("Выполнить приседания (45 сек)", self)
+        self.btn_test3 = QPushButton("Финальный замер пульса", self)
 
         self.txt_test1 = QLabel(txt_test1)
         self.txt_test2 = QLabel(txt_test2)
         self.txt_test3 = QLabel(txt_test3)
         self.txt_age = QLabel(txt_age)
-        self.txt_timer = QLabel(txt_timer)
+        self.txt_timer = QLabel("00:00:00")   # начальный текст для видимости
+        self.txt_timer.setFont(QFont("Times", 36, QFont.Bold))
         self.txt_name = QLabel(txt_name)
-        self.btn_test1 = QPushButton(txt_starttest1, self)
-        self.btn_test2 = QPushButton(txt_starttest2, self)
-        self.btn_test3 = QPushButton(txt_starttest3, self)
-        self.txt_sendresults = QPushButton(txt_sendresults)
 
-        self.txt_hinttest1 = QLineEdit(txt_hinttest1)
-        self.txt_hinttest2 = QLineEdit(txt_hinttest2)
-        self.txt_hinttest3 = QLineEdit(txt_hinttest3)
-        self.txt_hintname = QLineEdit(txt_hintname)
-        self.txt_hintage =  QLineEdit(txt_hintage)
+        # Поля ввода
+        self.txt_hinttest1 = QLineEdit()
+        self.txt_hinttest2 = QLineEdit()
+        self.txt_hinttest3 = QLineEdit()
+        self.txt_hintname = QLineEdit()
+        self.txt_hintage = QLineEdit()
 
-        self.l_line.addWidget(self.txt_name,alignment = Qt.AlignLeft)
-        self.l_line.addWidget(self.txt_hintname,alignment = Qt.AlignLeft)
-        self.l_line.addWidget(self.txt_age,alignment = Qt.AlignLeft)
-        self.l_line.addWidget(self.txt_hintage,alignment = Qt.AlignLeft)
-        self.l_line.addWidget(self.txt_test1,alignment = Qt.AlignLeft)
-        self.l_line.addWidget(self.btn_test1,alignment = Qt.AlignLeft)
-        self.l_line.addWidget(self.txt_hinttest1,alignment = Qt.AlignLeft)
-        self.l_line.addWidget(self.txt_test2,alignment = Qt.AlignLeft)
-        self.l_line.addWidget(self.btn_test2,alignment = Qt.AlignLeft)
-        self.l_line.addWidget(self.txt_test3,alignment = Qt.AlignLeft)
-        self.l_line.addWidget(self.btn_test3,alignment = Qt.AlignLeft)
-        self.l_line.addWidget(self.txt_hinttest2,alignment = Qt.AlignLeft)
-        self.l_line.addWidget(self.txt_hinttest3,alignment = Qt.AlignLeft)
 
-        self.r_line.addWidget(self.txt_timer,alignment = Qt.AlignRight)
+        #Проверка (валидаторы)
+        self.txt_hintage.setValidator(QIntValidator(0, 99))
+        self.txt_hinttest1.setValidator(QIntValidator(0, 250))
+        self.txt_hinttest2.setValidator(QIntValidator(0, 250))
+        self.txt_hinttest3.setValidator(QIntValidator(0, 250))
 
-        self.l_line.addWidget(self.txt_sendresults,alignment = Qt.AlignCenter)
+        # Добавляем всё в левую колонку
+        self.l_line.addWidget(self.txt_name, alignment=Qt.AlignLeft)
+        self.l_line.addWidget(self.txt_hintname, alignment=Qt.AlignLeft)
+        self.l_line.addWidget(self.txt_age, alignment=Qt.AlignLeft)
+        self.l_line.addWidget(self.txt_hintage, alignment=Qt.AlignLeft)
+        self.l_line.addWidget(self.txt_test1, alignment=Qt.AlignLeft)
+        self.l_line.addWidget(self.btn_test1, alignment=Qt.AlignLeft)   
+        self.l_line.addWidget(self.txt_hinttest1, alignment=Qt.AlignLeft)
+        self.l_line.addWidget(self.txt_test2, alignment=Qt.AlignLeft)
+        self.l_line.addWidget(self.btn_test2, alignment=Qt.AlignLeft)   
+        self.l_line.addWidget(self.txt_hinttest2, alignment=Qt.AlignLeft)
+        self.l_line.addWidget(self.txt_test3, alignment=Qt.AlignLeft)
+        self.l_line.addWidget(self.btn_test3, alignment=Qt.AlignLeft)   
+        self.l_line.addWidget(self.txt_hinttest3, alignment=Qt.AlignLeft)
+        self.l_line.addWidget(self.btn_next, alignment=Qt.AlignCenter)
+
+        #Таймер
+        self.r_line.addWidget(self.txt_timer, alignment=Qt.AlignRight)
 
         self.h_line.addLayout(self.l_line)
         self.h_line.addLayout(self.r_line)
-
         self.setLayout(self.h_line)
 
     def next_click(self):
+        
+        age_str = self.txt_hintage.text().strip()
+        t1_str = self.txt_hinttest1.text().strip()
+        t2_str = self.txt_hinttest2.text().strip()
+        t3_str = self.txt_hinttest3.text().strip()
+        
+        if not all([age_str, t1_str, t2_str, t3_str]):
+            QMessageBox.warning(self, "Ошибка", "Заполните все поля!")
+            return
+        
+        try:
+            age = int(age_str)
+            t1 = int(t1_str)
+            t2 = int(t2_str)
+            t3 = int(t3_str)
+        except ValueError:
+            QMessageBox.warning(self, "Ошибка", "Поля возраста и результатов должны содержать числа!")
+            return
+        
+        if t1 <= 0 or t2 <= 0 or t3 <= 0:
+            QMessageBox.warning(self, "Ошибка", "Значения пульса должны быть положительными!")
+            return
+        person = Person(self.txt_hintname.text(), int(self.txt_hintage.text()))
+         
+        self.exp = Experiment(person,
+                              self.txt_hinttest1.text(),
+                              self.txt_hinttest2.text(),
+                              self.txt_hinttest3.text())
+        self.fw = FinalWin(self.exp)
         self.hide()
-        self.prs = Person(self.txt_hintname.text, int(self.txt_hintage.text()))
-        self.exp = Experement(self.prs, self.txt_test1.text,self.txt_test2.text, self.txt_test3.text)
-        self.tw = FinalWin(self.exp)
+        name = self.txt_hintname.text().strip()
         
 
     def connects(self):
-        self.txt_sendresults.clicked.connect(self.next_click)
+        self.btn_next.clicked.connect(self.next_click)
         self.btn_test1.clicked.connect(self.timer_test)
         self.btn_test2.clicked.connect(self.timer_sits)
         self.btn_test3.clicked.connect(self.timer_final)
 
     def timer_test(self):
-        global time
-        time = QTime(0, 1, 0)
+        self.time = QTime(0, 0, 15)   # 15 секунд
+        if self.timer:
+            self.timer.stop()
         self.timer = QTimer()
         self.timer.timeout.connect(self.timer1Event)
         self.timer.start(1000)
 
-
     def timer1Event(self):
-        global time
-        time = time.addSecs(-1)
-        self.txt_timer.setText(time.toString("hh:mm:ss"))
-        self.txt_timer.setFont(QFont("Times", 36, QFont.Bold))
-        self.txt_timer.setStyleSheet('color:rgb(235, 191, 193)')
-        if time.toString("hh:mm:ss") == "00:00:00":
+        self.time = self.time.addSecs(-1)
+        self.txt_timer.setText(self.time.toString("hh:mm:ss"))
+        if self.time.toString("hh:mm:ss") == "00:00:00":
             self.timer.stop()
 
     def timer_sits(self):
-        global time
-        time = QTime(0, 0, 30)
+        self.time = QTime(0, 0, 45)   # 45 секунд
+        if self.timer:
+            self.timer.stop()
         self.timer = QTimer()
         self.timer.timeout.connect(self.timer2Event)
-        self.timer.start(1500)
+        self.timer.start(1000)
 
     def timer2Event(self):
-        global time
-        time = time.addSecs(-1)
-        self.txt_timer.setText(time.toString("hh:mm:ss")[6:8])
-        self.txt_timer.setFont(QFont("Times", 36, QFont.Bold))
-        self.txt_timer.setStyleSheet('color:rgb(235, 191, 193)')
-    
+        self.time = self.time.addSecs(-1)
+        self.txt_timer.setText(self.time.toString("ss"))   # только секунды
+        if self.time.toString("hh:mm:ss") == "00:00:00":
+            self.timer.stop()
+
     def timer_final(self):
-        global time
-        time = QTime(0, 1, 0)
+        self.time = QTime(0, 1, 0)   # 1 минута
+        if self.timer:
+            self.timer.stop()
         self.timer = QTimer()
         self.timer.timeout.connect(self.timer3Event)
         self.timer.start(1000)
 
     def timer3Event(self):
-        global time
-        if int(time.toString("hh:mm:ss")[6:8]) >= 45:
-            self.txt_timer.setStyleSheet('color:rgb(170, 243, 94)')
-        elif int(time.toString("hh:mm:ss")[6:8]) <= 15:
+        self.time = self.time.addSecs(-1)
+        self.txt_timer.setText(self.time.toString("hh:mm:ss"))
+        seconds = int(self.time.toString("ss"))
+        # Зелёный цвет для первых и последних 15 секунд
+        if seconds >= 45 or seconds <= 15:
             self.txt_timer.setStyleSheet('color:rgb(170, 243, 94)')
         else:
             self.txt_timer.setStyleSheet('color:rgb(0, 0, 0)')
-
-        self.age = age
+        if self.time.toString("hh:mm:ss") == "00:00:00":
+            self.timer.stop()
